@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-100 font-sans min-h-screen overflow-x-hidden;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+/* Custom Wordle Animations */
+
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+    border-color: rgb(71 85 105); /* border-slate-600 */
+  }
+  40% {
+    transform: scale(1.1);
+    border-color: rgb(148 163 184); /* border-slate-400 */
+  }
+  100% {
+    transform: scale(1);
+    border-color: rgb(100 116 139); /* border-slate-500 */
+  }
+}
+
+@keyframes flip-correct {
+  0% {
+    transform: rotateX(0deg);
+  }
+  45% {
+    transform: rotateX(90deg);
+    background-color: transparent;
+  }
+  55% {
+    transform: rotateX(90deg);
+    background-color: rgb(34 197 94); /* bg-green-500 */
+    border-color: rgb(34 197 94);
+    color: white;
+  }
+  100% {
+    transform: rotateX(0deg);
+    background-color: rgb(34 197 94);
+    border-color: rgb(34 197 94);
+    color: white;
+  }
+}
+
+@keyframes flip-present {
+  0% {
+    transform: rotateX(0deg);
+  }
+  45% {
+    transform: rotateX(90deg);
+    background-color: transparent;
+  }
+  55% {
+    transform: rotateX(90deg);
+    background-color: rgb(234 179 8); /* bg-yellow-500 */
+    border-color: rgb(234 179 8);
+    color: white;
+  }
+  100% {
+    transform: rotateX(0deg);
+    background-color: rgb(234 179 8);
+    border-color: rgb(234 179 8);
+    color: white;
+  }
+}
+
+@keyframes flip-absent {
+  0% {
+    transform: rotateX(0deg);
+  }
+  45% {
+    transform: rotateX(90deg);
+    background-color: transparent;
+  }
+  55% {
+    transform: rotateX(90deg);
+    background-color: rgb(71 85 105); /* bg-slate-600 */
+    border-color: rgb(71 85 105);
+    color: rgb(203 213 225); /* text-slate-300 */
+  }
+  100% {
+    transform: rotateX(0deg);
+    background-color: rgb(71 85 105);
+    border-color: rgb(71 85 105);
+    color: rgb(203 213 225);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  15%, 45%, 75% {
+    transform: translateX(-6px);
+  }
+  30%, 60%, 90% {
+    transform: translateX(6px);
+  }
+}
+
+.animate-pop {
+  animation: pop 0.12s ease-in-out forwards;
+}
+
+.animate-flip-correct {
+  animation: flip-correct 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-flip-present {
+  animation: flip-present 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-flip-absent {
+  animation: flip-absent 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Glassmorphism details */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card {
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}

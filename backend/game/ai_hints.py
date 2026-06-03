@@ -61,7 +61,7 @@ def generate_hint(word: str, guesses: list, results: list, hint_number: int) -> 
 6. Қысқа және нұсқа жауап бер"""
 
     response = client.models.generate_content(
-        model='gemini-2.0-flash',
+        model='gemini-3.5-flash',
         contents=prompt,
     )
 
