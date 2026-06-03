@@ -8,5 +8,6 @@ urlpatterns = [
     path('start/', views.StartView.as_view(), name='game-start'),
     path('guess/', views.GuessView.as_view(), name='game-guess'),
     path('hint/', views.HintView.as_view(), name='game-hint'),
+    path('give-up/', views.GiveUpView.as_view(), name='game-give-up'),
     path('validate-word/', views.ValidateView.as_view(), name='game-validate'),
 ]

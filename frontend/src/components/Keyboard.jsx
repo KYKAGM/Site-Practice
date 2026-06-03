@@ -1,26 +1,41 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Delete } from 'lucide-react';
 
-export default function Keyboard({ onKey, onDelete, onEnter, usedLetters }) {
-  // Kazakh layout: Cyrillic standard + Kazakh-specific letters placed at the end of each row
-  const rows = [
-    ['й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ә', 'і', 'ң'],
-    ['ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э', 'ғ', 'ү', 'ұ'],
-    ['ENTER', 'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю', 'қ', 'ө', 'һ', 'DELETE']
-  ];
+const rows = [
+  ['й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ә', 'і', 'ң'],
+  ['ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э', 'ғ', 'ү', 'ұ'],
+  ['ENTER', 'я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю', 'қ', 'ө', 'һ', 'DELETE']
+];
 
-  // Listen to physical keyboard presses
+export default function Keyboard({ onKey, onDelete, onEnter, usedLetters }) {
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    const size = Math.max(rect.width, rect.height);
+
+    ripple.className = 'keyboard-ripple';
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+    ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+
+    button.querySelector('.keyboard-ripple')?.remove();
+    button.appendChild(ripple);
+    window.setTimeout(() => ripple.remove(), 520);
+  };
+
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.repeat) return;
-      
-      const key = e.key.toLowerCase();
-      
-      if (e.key === 'Enter') {
+    const handleKeyDown = (event) => {
+      if (event.repeat) return;
+
+      const key = event.key.toLowerCase();
+
+      if (event.key === 'Enter') {
         onEnter();
-      } else if (e.key === 'Backspace') {
+      } else if (event.key === 'Backspace') {
         onDelete();
-      } else if (/^[а-яёәіңғүұқоһ]$/i.test(key)) {
+      } else if (/^[а-яёәіңғүұқөһ]$/i.test(key)) {
         onKey(key);
       }
     };
@@ -30,27 +45,14 @@ export default function Keyboard({ onKey, onDelete, onEnter, usedLetters }) {
   }, [onKey, onDelete, onEnter]);
 
   const getKeyClass = (key) => {
-    let base = "flex-1 h-12 sm:h-14 flex items-center justify-center font-bold text-sm sm:text-base rounded-md border uppercase select-none transition-all duration-150 cursor-pointer active:scale-95 ";
-    
-    if (key === 'ENTER' || key === 'DELETE') {
-      return base + "px-2 bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-100 text-xs sm:text-sm flex-[1.6]";
-    }
-
     const status = usedLetters[key];
-    if (status === 'correct') {
-      return base + "bg-green-600 border-green-600 text-white";
-    }
-    if (status === 'present') {
-      return base + "bg-yellow-600 border-yellow-600 text-white";
-    }
-    if (status === 'absent') {
-      return base + "bg-slate-800/80 border-slate-900 text-slate-600 pointer-events-none";
-    }
-    
-    return base + "bg-slate-700/40 hover:bg-slate-700/80 text-slate-200 border-slate-700/20";
+    const actionClass = key === 'ENTER' || key === 'DELETE' ? 'keyboard-key--wide' : '';
+    const statusClass = status ? `keyboard-key--${status}` : '';
+    return `keyboard-key cursor-target ${actionClass} ${statusClass}`.trim();
   };
 
-  const handleKeyClick = (key) => {
+  const handleKeyClick = (event, key) => {
+    createRipple(event);
     if (key === 'ENTER') {
       onEnter();
     } else if (key === 'DELETE') {
@@ -61,20 +63,12 @@ export default function Keyboard({ onKey, onDelete, onEnter, usedLetters }) {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-1 sm:px-4 mt-6 mb-4 flex flex-col gap-2">
+    <div className="keyboard">
       {rows.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex gap-1 sm:gap-1.5 justify-center w-full">
+        <div key={rowIndex} className="keyboard-row">
           {row.map((key) => (
-            <button
-              key={key}
-              onClick={() => handleKeyClick(key)}
-              className={getKeyClass(key)}
-            >
-              {key === 'DELETE' ? (
-                <Delete className="w-4 h-4 sm:w-5 sm:h-5" />
-              ) : (
-                key
-              )}
+            <button key={key} type="button" onClick={(event) => handleKeyClick(event, key)} className={getKeyClass(key)}>
+              {key === 'DELETE' ? <Delete className="w-4 h-4 sm:w-5 sm:h-5" /> : key}
             </button>
           ))}
         </div>

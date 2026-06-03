@@ -1,10 +1,8 @@
-"""
-Management command to load Kazakh words from JSON files into the database.
-Usage: python manage.py load_words
-"""
 import json
 from pathlib import Path
+
 from django.core.management.base import BaseCommand
+
 from game.models import KazakhWord
 
 
@@ -35,8 +33,8 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f'File not found: {filepath}'))
                 continue
 
-            with open(filepath, 'r', encoding='utf-8') as f:
-                words_data = json.load(f)
+            with open(filepath, 'r', encoding='utf-8') as file:
+                words_data = json.load(file)
 
             loaded = 0
             skipped = 0

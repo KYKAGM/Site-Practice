@@ -1,4 +1,3 @@
-import React from 'react';
 import WordRow from './WordRow';
 
 export default function GameBoard({ guesses, results, currentGuess, wordLength, shake }) {

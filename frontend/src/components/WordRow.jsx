@@ -1,4 +1,3 @@
-import React from 'react';
 import LetterTile from './LetterTile';
 
 export default function WordRow({ guess, result, isCurrent, wordLength, shake }) {

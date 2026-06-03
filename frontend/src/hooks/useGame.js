@@ -1,5 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { gameApi } from '../api/gameApi';
+
+const KAZAKH_LETTER_PATTERN = /^[а-яёәіңғүұқөһ]$/i;
 
 export function useGame() {
   const [sessionId, setSessionId] = useState(null);
@@ -8,7 +10,7 @@ export function useGame() {
   const [results, setResults] = useState([]);
   const [currentGuess, setCurrentGuess] = useState('');
   const [usedLetters, setUsedLetters] = useState({});
-  const [gameStatus, setGameStatus] = useState('idle'); // 'idle' | 'playing' | 'won' | 'lost'
+  const [gameStatus, setGameStatus] = useState('idle');
   const [hintsLeft, setHintsLeft] = useState(2);
   const [currentHint, setCurrentHint] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,15 +18,16 @@ export function useGame() {
   const [answer, setAnswer] = useState(null);
   const [shakeRow, setShakeRow] = useState(false);
 
-  // Automatically clear error message after 2 seconds
   useEffect(() => {
-    if (errorMessage) {
-      const timer = setTimeout(() => {
-        setErrorMessage(null);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
+    if (!errorMessage) return undefined;
+    const timer = setTimeout(() => setErrorMessage(null), 2200);
+    return () => clearTimeout(timer);
   }, [errorMessage]);
+
+  const triggerShake = useCallback(() => {
+    setShakeRow(true);
+    setTimeout(() => setShakeRow(false), 500);
+  }, []);
 
   const selectLength = useCallback(async (length) => {
     setIsLoading(true);
@@ -50,61 +53,45 @@ export function useGame() {
 
   const typeKey = useCallback((key) => {
     if (gameStatus !== 'playing' || isLoading) return;
-    
-    // Only allow Kazakh Cyrillic letters (both standard Cyrillic and Kazakh-specific)
-    // Kazakh letters: ә, і, ң, ғ, ү, ұ, қ, ө, һ and standard cyrillic
-    const isKazakhLetter = /^[а-яёәіңғүұқоһ]$/i.test(key);
-    
-    if (isKazakhLetter && currentGuess.length < wordLength) {
-      setCurrentGuess(prev => prev + key.toLowerCase());
+
+    if (KAZAKH_LETTER_PATTERN.test(key) && currentGuess.length < wordLength) {
+      setCurrentGuess((value) => value + key.toLowerCase());
     }
   }, [gameStatus, currentGuess, wordLength, isLoading]);
 
   const deleteLetter = useCallback(() => {
     if (gameStatus !== 'playing' || isLoading) return;
-    setCurrentGuess(prev => prev.slice(0, -1));
+    setCurrentGuess((value) => value.slice(0, -1));
   }, [gameStatus, isLoading]);
 
   const submitGuess = useCallback(async () => {
     if (gameStatus !== 'playing' || isLoading) return;
 
     if (currentGuess.length !== wordLength) {
-      setErrorMessage('Әріптер саны жеткіліксіз');
-      setShakeRow(true);
-      setTimeout(() => setShakeRow(false), 500);
+      setErrorMessage('Әріп саны жеткіліксіз');
+      triggerShake();
       return;
     }
 
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      // 1. Validate word first
-      const valResult = await gameApi.validateWord(currentGuess, wordLength);
-      if (!valResult.valid) {
+      const validation = await gameApi.validateWord(currentGuess, wordLength);
+      if (!validation.valid) {
         setErrorMessage('Мұндай сөз сөздікте жоқ');
-        setShakeRow(true);
-        setTimeout(() => setShakeRow(false), 500);
-        setIsLoading(false);
+        triggerShake();
         return;
       }
 
-      // 2. Submit guess
       const data = await gameApi.submitGuess(sessionId, currentGuess);
-      
       const newGuesses = [...guesses, currentGuess];
       const newResults = [...results, data.result];
-      
-      setGuesses(newGuesses);
-      setResults(newResults);
-      setCurrentGuess('');
-
-      // Update used letters
       const newUsedLetters = { ...usedLetters };
+
       currentGuess.split('').forEach((char, index) => {
         const letterStatus = data.result[index];
         const currentLetterStatus = newUsedLetters[char];
-        
-        // Priority order: correct > present > absent
+
         if (letterStatus === 'correct') {
           newUsedLetters[char] = 'correct';
         } else if (letterStatus === 'present' && currentLetterStatus !== 'correct') {
@@ -113,7 +100,11 @@ export function useGame() {
           newUsedLetters[char] = 'absent';
         }
       });
+
+      setGuesses(newGuesses);
+      setResults(newResults);
       setUsedLetters(newUsedLetters);
+      setCurrentGuess('');
 
       if (data.is_complete) {
         setAnswer(data.word);
@@ -121,12 +112,11 @@ export function useGame() {
       }
     } catch (err) {
       setErrorMessage(err.message);
-      setShakeRow(true);
-      setTimeout(() => setShakeRow(false), 500);
+      triggerShake();
     } finally {
       setIsLoading(false);
     }
-  }, [sessionId, currentGuess, wordLength, guesses, results, usedLetters, gameStatus, isLoading]);
+  }, [sessionId, currentGuess, wordLength, guesses, results, usedLetters, gameStatus, isLoading, triggerShake]);
 
   const getHint = useCallback(async () => {
     if (gameStatus !== 'playing' || isLoading || hintsLeft <= 0) return;
@@ -143,6 +133,22 @@ export function useGame() {
       setIsLoading(false);
     }
   }, [sessionId, gameStatus, isLoading, hintsLeft]);
+
+  const giveUp = useCallback(async () => {
+    if (gameStatus !== 'playing' || isLoading || !sessionId) return;
+
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const data = await gameApi.giveUp(sessionId);
+      setAnswer(data.word);
+      setGameStatus('lost');
+    } catch (err) {
+      setErrorMessage(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [gameStatus, isLoading, sessionId]);
 
   const resetGame = useCallback(() => {
     setSessionId(null);
@@ -177,6 +183,7 @@ export function useGame() {
     deleteLetter,
     submitGuess,
     getHint,
+    giveUp,
     resetGame
   };
 }
