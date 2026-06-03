@@ -1,0 +1,17 @@
+Документация по разработке проекта "Сөзді тап! (Казахский Wordle)"
+
+Шаг 1: Изучение архитектуры проекта и файла README.md.
+Шаг 2: Установка зависимостей бэкенда (Django, djangorestframework, psycopg2 и др.) в виртуальное окружение.
+Шаг 3: Настройка базы данных. В файл backend/.env добавлен пароль от PostgreSQL (helloworld).
+Шаг 4: Запуск локального сервера PostgreSQL и создание базы данных kazakh_wordle с помощью скрипта.
+Шаг 5: Выполнение миграций базы данных (python manage.py makemigrations game, python manage.py migrate).
+Шаг 6: Загрузка словарной базы (119 слов из JSON файлов) в базу данных (python manage.py load_words).
+Шаг 7: Инициализация фронтенд-приложения на базе React и Vite (npx create-vite).
+Шаг 8: Установка npm-зависимостей фронтенда, включая Tailwind CSS v3 и иконки lucide-react.
+Шаг 9: Настройка конфигурации Tailwind (tailwind.config.js) и создание глобальных стилей (index.css) с кастомными анимациями (flip, pop, shake).
+Шаг 10: Настройка прокси-сервера в vite.config.js для перенаправления API-запросов на порт 8000 (Django бэкенд).
+Шаг 11: Разработка логики игры (API клиент gameApi.js, кастомный хук useGame.js).
+Шаг 12: Создание пользовательского интерфейса (компоненты Header, LengthSelector, LetterTile, WordRow, GameBoard, Keyboard, HintButton, GameModal, HelpModal и сборка в App.jsx).
+Шаг 13: Обновление файла index.html (установка языка kk, добавление meta-описания и заголовка для SEO).
+Шаг 14: Успешная сборка проекта (npm run build) для проверки отсутствия ошибок.
+Шаг 15: Предоставление обходной команды для ошибки Execution Policy в PowerShell при запуске npm run dev.
