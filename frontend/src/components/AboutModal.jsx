@@ -18,8 +18,20 @@ export default function AboutModal({ isOpen, onClose }) {
             <X className="w-6 h-6" />
           </button>
         </div>
-    
 
+        <div className="p-6 flex flex-col gap-4">
+          <p className="text-slate-300">
+            СӨЗДІК - бұл танымал worldle ойынының қазақша нұсқасы, онда ойыншылар күнделікті сөзді табу үшін жарысады. Бұл жобаның мақсаты еуропалық тренды қазақстанда дамыту және сөздік қорды ұлғайтуға арналған!
+          </p>
+        </div>
+
+        <div className="p-6 flex flex-col gap-4">
+          <div className="pt-4 border-t border-slate-700">
+            <p className="text-xs text-slate-500 text-center">
+              © 2026 СӨЗДІК Жобасы. IITU @sansyzkuan.
+            </p>
+          </div>
+        </div>
 
         <div className="bg-slate-800 border-t border-slate-700 p-4 sticky bottom-0">
           <button

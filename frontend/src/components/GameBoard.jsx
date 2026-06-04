@@ -6,7 +6,6 @@ export default function GameBoard({ guesses, results, currentGuess, wordLength, 
 
   for (let i = 0; i < maxGuesses; i++) {
     if (i < guesses.length) {
-      // Completed guesses
       rows.push(
         <WordRow
           key={i}
@@ -17,7 +16,6 @@ export default function GameBoard({ guesses, results, currentGuess, wordLength, 
         />
       );
     } else if (i === guesses.length) {
-      // Current typing row
       rows.push(
         <WordRow
           key={i}
@@ -29,7 +27,6 @@ export default function GameBoard({ guesses, results, currentGuess, wordLength, 
         />
       );
     } else {
-      // Empty future rows
       rows.push(
         <WordRow
           key={i}
