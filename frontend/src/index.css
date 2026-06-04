@@ -559,6 +559,18 @@ button {
   transform: scale(0.96);
 }
 
+.keyboard-key:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: var(--line);
+  background: var(--panel-strong);
+  color: var(--text);
+}
+
+.keyboard-key:disabled:hover {
+  border-color: var(--line);
+}
+
 .keyboard-key--wide {
   flex: 1.65 1 0;
   font-size: clamp(0.62rem, 2vw, 0.82rem);
