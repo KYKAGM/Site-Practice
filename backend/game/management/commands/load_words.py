@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from django.core.management.base import BaseCommand
@@ -7,7 +6,7 @@ from game.models import KazakhWord
 
 
 class Command(BaseCommand):
-    help = 'Load Kazakh words from JSON files into the database'
+    help = 'Load Kazakh words from words.txt into the database'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -17,47 +16,42 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        data_dir = Path(__file__).resolve().parent.parent.parent / 'data'
+        project_root = Path(__file__).resolve().parents[4]
+        words_file = project_root / 'words.txt'
 
         if options['clear']:
             count = KazakhWord.objects.count()
             KazakhWord.objects.all().delete()
             self.stdout.write(self.style.WARNING(f'Deleted {count} existing words'))
 
-        total_loaded = 0
-        total_skipped = 0
+        if not words_file.exists():
+            self.stdout.write(self.style.ERROR(f'File not found: {words_file}'))
+            return
 
-        for length in [4, 5, 6]:
-            filepath = data_dir / f'words_{length}.json'
-            if not filepath.exists():
-                self.stdout.write(self.style.WARNING(f'File not found: {filepath}'))
-                continue
+        allowed_lengths = set(range(2, 9))
 
-            with open(filepath, 'r', encoding='utf-8') as file:
-                words_data = json.load(file)
+        loaded = 0
+        skipped = 0
 
-            loaded = 0
-            skipped = 0
-
-            for entry in words_data:
-                if isinstance(entry, str):
-                    word = entry.lower().strip()
-                    definition = ''
-                elif isinstance(entry, dict):
-                    word = entry.get('word', '').lower().strip()
-                    definition = entry.get('definition', '')
-                else:
+        with open(words_file, 'r', encoding='utf-8') as file:
+            for line in file:
+                word = line.strip().lower()
+                if not word:
                     continue
 
-                if not word or len(word) != length:
+                if not word.isalpha():
+                    skipped += 1
+                    continue
+
+                length = len(word)
+                if length not in allowed_lengths:
                     skipped += 1
                     continue
 
                 _, created = KazakhWord.objects.get_or_create(
                     word=word,
                     defaults={
-                        'length': length,
-                        'definition': definition,
+                        'definition': '',
                     }
                 )
 
@@ -66,12 +60,6 @@ class Command(BaseCommand):
                 else:
                     skipped += 1
 
-            total_loaded += loaded
-            total_skipped += skipped
-            self.stdout.write(
-                self.style.SUCCESS(f'{length} әріп: {loaded} жүктелді, {skipped} өткізілді')
-            )
-
-        self.stdout.write(
-            self.style.SUCCESS(f'\nБарлығы: {total_loaded} сөз жүктелді, {total_skipped} өткізілді')
-        )
+        self.stdout.write(self.style.SUCCESS(
+            f'{loaded} сөз жүктелді, {skipped} сөз өткізілді (2-8 әріптік сүзгілер бойынша)'
+        ))

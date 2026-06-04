@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 class StartGameSerializer(serializers.Serializer):
     """Serializer for starting a new game."""
-    word_length = serializers.IntegerField(min_value=4, max_value=6)
+    word_length = serializers.IntegerField(min_value=2, max_value=8)
 
 
 class GuessSerializer(serializers.Serializer):
