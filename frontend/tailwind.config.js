@@ -4,9 +4,16 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: [
+    'keyboard-key--correct',
+    'keyboard-key--present',
+    'keyboard-key--absent',
+    'tile--correct',
+    'tile--present',
+    'tile--absent',
+  ],
   theme: {
     extend: {},
   },
   plugins: [],
 }
-

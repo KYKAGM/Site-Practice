@@ -45,7 +45,7 @@ export default function Keyboard({ onKey, onDelete, onEnter, usedLetters }) {
   }, [onKey, onDelete, onEnter, usedLetters]);
 
   const getKeyClass = (key) => {
-    const status = usedLetters[key];
+    const status = usedLetters[key.toLowerCase()];
     const actionClass = key === 'ENTER' || key === 'DELETE' ? 'keyboard-key--wide' : '';
     const statusClass = status ? `keyboard-key--${status}` : '';
     return `keyboard-key cursor-target ${actionClass} ${statusClass}`.trim();
@@ -67,7 +67,7 @@ export default function Keyboard({ onKey, onDelete, onEnter, usedLetters }) {
       {rows.map((row, rowIndex) => (
         <div key={rowIndex} className="keyboard-row">
           {row.map((key) => {
-            const status = usedLetters[key];
+            const status = usedLetters[key.toLowerCase()];
             return (
               <button
                 key={key}

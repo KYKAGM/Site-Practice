@@ -36,6 +36,7 @@ export default function App() {
     giveUp,
     resetGame
   } = useGame();
+  window.__usedLetters = usedLetters;  // ← добавь эту строку
 
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

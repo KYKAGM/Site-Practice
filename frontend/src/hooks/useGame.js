@@ -88,17 +88,22 @@ export function useGame() {
       const newResults = [...results, data.result];
       const newUsedLetters = { ...usedLetters };
 
+      const statusPriority = {
+        absent: 1,
+        present: 2,
+        correct: 3,
+      };
+
+      const getBestStatus = (existing, next) => {
+        if (!existing) return next;
+        if (!statusPriority[next]) return existing;
+        return statusPriority[next] > statusPriority[existing] ? next : existing;
+      };
+
       currentGuess.split('').forEach((char, index) => {
         const letterStatus = data.result[index];
         const currentLetterStatus = newUsedLetters[char];
-
-        if (letterStatus === 'correct') {
-          newUsedLetters[char] = 'correct';
-        } else if (letterStatus === 'present' && currentLetterStatus !== 'correct') {
-          newUsedLetters[char] = 'present';
-        } else if (!currentLetterStatus) {
-          newUsedLetters[char] = 'absent';
-        }
+        newUsedLetters[char] = getBestStatus(currentLetterStatus, letterStatus);
       });
 
       setGuesses(newGuesses);

@@ -20,9 +20,9 @@
   --accent-contrast: #ffffff;
   --gold: #f2b84b;
   --danger: #ef4444;
-  --correct: #2f9e5a;
-  --present: #d5a11e;
-  --absent: #394256;
+  --correct: #16a34a;
+  --present: #f59e0b;
+  --absent: #475569;
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
 }
 
@@ -484,23 +484,23 @@ button {
 
 .tile--correct,
 .keyboard-key--correct {
-  color: #fff;
-  border-color: var(--correct);
-  background: var(--correct);
+  color: #fff !important;
+  border-color: var(--correct) !important;
+  background: var(--correct) !important;
 }
 
 .tile--present,
 .keyboard-key--present {
-  color: #fff;
-  border-color: var(--present);
-  background: var(--present);
+  color: #fff !important;
+  border-color: var(--present) !important;
+  background: var(--present) !important;
 }
 
 .tile--absent,
 .keyboard-key--absent {
-  color: #fff;
-  border-color: var(--absent);
-  background: var(--absent);
+  color: #fff !important;
+  border-color: var(--absent) !important;
+  background: var(--absent) !important;
 }
 
 .mode-colorblind .tile--correct::after,
@@ -562,8 +562,6 @@ button {
 .keyboard-key:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-  border-color: var(--line);
-  background: var(--panel-strong);
   color: var(--text);
 }
 

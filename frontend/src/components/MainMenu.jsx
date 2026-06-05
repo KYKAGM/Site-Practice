@@ -13,7 +13,7 @@ export default function MainMenu({ onPlayClick, onAboutClick }) {
         <div className="flex flex-col gap-6 w-full">
           <button
             onClick={onPlayClick}
-            className="w-full py-4 px-6 bg-gradient-to-r from-green-400 to-yellow-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold text-2xl rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-target"
+            className="w-full py-4 px-6 bg-gradient-to-r from-green-400 to-yellow-500  text-white font-bold text-2xl rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-target"
           >
             Ойнау
           </button>
