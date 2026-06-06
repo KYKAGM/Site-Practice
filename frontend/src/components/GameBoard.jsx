@@ -40,7 +40,10 @@ export default function GameBoard({ guesses, results, currentGuess, wordLength, 
   }
 
   return (
-    <div className="flex flex-col gap-2 my-4 px-4 py-2 w-full max-w-sm mx-auto">
+    <div
+      className="game-board"
+      style={{ '--word-length': wordLength || 5 }}
+    >
       {rows}
     </div>
   );

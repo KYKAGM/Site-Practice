@@ -9,6 +9,7 @@ class KazakhWord(models.Model):
     word = models.CharField(max_length=10, unique=True, db_index=True)
     length = models.IntegerField(db_index=True)
     definition = models.TextField(blank=True, default='')
+    embedding = models.JSONField(null=True, blank=True, default=None)
 
     class Meta:
         ordering = ['word']
@@ -24,7 +25,7 @@ class KazakhWord(models.Model):
 
 
 class GameSession(models.Model):
-    """A single game session."""
+    """A single Wordle game session."""
 
     session_key = models.CharField(max_length=64, unique=True, default=uuid.uuid4, db_index=True)
     word = models.CharField(max_length=10)
@@ -57,3 +58,21 @@ class GameSession(models.Model):
     @property
     def hints_left(self):
         return max(0, 2 - self.hints_used)
+
+
+class ContextGameSession(models.Model):
+    """A semantic ranking game session."""
+
+    secret_word = models.ForeignKey(KazakhWord, on_delete=models.PROTECT, related_name='context_sessions')
+    attempts = models.JSONField(default=list)
+    solved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Контекст сессиясы'
+        verbose_name_plural = 'Контекст сессиялары'
+
+    def __str__(self):
+        status = 'solved' if self.solved else 'playing'
+        return f'{status}: Context session {self.id} - {self.secret_word.word}'

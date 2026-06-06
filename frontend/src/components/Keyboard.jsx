@@ -42,7 +42,7 @@ export default function Keyboard({ onKey, onDelete, onEnter, usedLetters }) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onKey, onDelete, onEnter, usedLetters]);
+  }, [onKey, onDelete, onEnter]);
 
   const getKeyClass = (key) => {
     const status = usedLetters[key.toLowerCase()];
@@ -66,19 +66,16 @@ export default function Keyboard({ onKey, onDelete, onEnter, usedLetters }) {
     <div className="keyboard">
       {rows.map((row, rowIndex) => (
         <div key={rowIndex} className="keyboard-row">
-          {row.map((key) => {
-            const status = usedLetters[key.toLowerCase()];
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={(event) => handleKeyClick(event, key)}
-                className={getKeyClass(key)}
-              >
-                {key === 'DELETE' ? <Delete className="w-4 h-4 sm:w-5 sm:h-5" /> : key}
-              </button>
-            );
-          })}
+          {row.map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={(event) => handleKeyClick(event, key)}
+              className={getKeyClass(key)}
+            >
+              {key === 'DELETE' ? <Delete className="w-4 h-4 sm:w-5 sm:h-5" /> : key}
+            </button>
+          ))}
         </div>
       ))}
     </div>

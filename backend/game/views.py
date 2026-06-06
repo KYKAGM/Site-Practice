@@ -3,12 +3,17 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .ai_hints import generate_hint
-from .models import GameSession, KazakhWord
+from .context_embeddings import (
+    build_context_ranking,
+    cache_context_ranking,
+    get_cached_context_ranking,
+)
+from .models import ContextGameSession, GameSession, KazakhWord
 from .serializers import GuessSerializer, HintSerializer, StartGameSerializer
 
 
 class StartView(APIView):
-    """Start a new game session."""
+    """Start a new Wordle game session."""
 
     def post(self, request):
         serializer = StartGameSerializer(data=request.data)
@@ -22,10 +27,7 @@ class StartView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        session = GameSession.objects.create(
-            word=word_obj.word,
-            word_length=word_length,
-        )
+        session = GameSession.objects.create(word=word_obj.word, word_length=word_length)
 
         return Response({
             'session_id': session.id,
@@ -36,7 +38,7 @@ class StartView(APIView):
 
 
 class GuessView(APIView):
-    """Submit a guess for the current game."""
+    """Submit a Wordle guess for the current game."""
 
     def post(self, request):
         serializer = GuessSerializer(data=request.data)
@@ -48,31 +50,18 @@ class GuessView(APIView):
         try:
             session = GameSession.objects.get(id=session_id)
         except GameSession.DoesNotExist:
-            return Response(
-                {'error': 'Ойын сессиясы табылмады'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({'error': 'Ойын сессиясы табылмады'}, status=status.HTTP_404_NOT_FOUND)
 
         if session.is_complete:
-            return Response(
-                {'error': 'Ойын аяқталған'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Ойын аяқталған'}, status=status.HTTP_400_BAD_REQUEST)
 
         if len(guess) != session.word_length:
-            return Response(
-                {'error': 'Сөз ұзындығы дұрыс емес'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Сөз ұзындығы дұрыс емес'}, status=status.HTTP_400_BAD_REQUEST)
 
         if not KazakhWord.objects.filter(word=guess, length=session.word_length).exists():
-            return Response(
-                {'error': 'Сөз сөздікте табылмады'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Сөз сөздікте табылмады'}, status=status.HTTP_400_BAD_REQUEST)
 
-        target = session.word
-        result = self._check_guess(guess, target)
+        result = self._check_guess(guess, session.word)
 
         guesses = session.guesses or []
         results = session.results or []
@@ -119,7 +108,7 @@ class GuessView(APIView):
 
 
 class HintView(APIView):
-    """Request an AI-generated hint."""
+    """Request an AI-generated Wordle hint."""
 
     def post(self, request):
         serializer = HintSerializer(data=request.data)
@@ -130,22 +119,13 @@ class HintView(APIView):
         try:
             session = GameSession.objects.get(id=session_id)
         except GameSession.DoesNotExist:
-            return Response(
-                {'error': 'Ойын сессиясы табылмады'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({'error': 'Ойын сессиясы табылмады'}, status=status.HTTP_404_NOT_FOUND)
 
         if session.is_complete:
-            return Response(
-                {'error': 'Ойын аяқталған'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Ойын аяқталған'}, status=status.HTTP_400_BAD_REQUEST)
 
         if session.hints_used >= 2:
-            return Response(
-                {'error': 'Кеңестер аяқталды'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Кеңестер аяқталды'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             hint_text = generate_hint(
@@ -170,7 +150,7 @@ class HintView(APIView):
 
 
 class GiveUpView(APIView):
-    """Finish the current game as a loss and reveal the answer."""
+    """Finish the current Wordle game as a loss and reveal the answer."""
 
     def post(self, request):
         serializer = HintSerializer(data=request.data)
@@ -181,10 +161,7 @@ class GiveUpView(APIView):
         try:
             session = GameSession.objects.get(id=session_id)
         except GameSession.DoesNotExist:
-            return Response(
-                {'error': 'Ойын сессиясы табылмады'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({'error': 'Ойын сессиясы табылмады'}, status=status.HTTP_404_NOT_FOUND)
 
         if not session.is_complete:
             session.is_complete = True
@@ -213,3 +190,98 @@ class ValidateView(APIView):
             query = query.filter(length=int(length))
 
         return Response({'valid': query.exists()})
+
+
+class ContextStartView(APIView):
+    """Start a Contexto-like semantic ranking game."""
+
+    def post(self, request):
+        secret_word = KazakhWord.objects.exclude(embedding__isnull=True).exclude(embedding=[]).order_by('?').first()
+        if not secret_word:
+            return Response(
+                {'error': 'Embedding дайын сөз табылмады'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        session = ContextGameSession.objects.create(secret_word=secret_word)
+        try:
+            ranking = build_context_ranking(secret_word)
+        except ValueError as exc:
+            session.delete()
+            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        cache_context_ranking(session.id, ranking)
+
+        return Response({
+            'session_id': session.id,
+            'total': ranking['total'],
+        })
+
+
+class ContextGuessView(APIView):
+    """Submit a Context mode guess and return its semantic rank."""
+
+    def post(self, request):
+        session_id = request.data.get('session_id')
+        word_text = str(request.data.get('word', '')).lower().strip()
+
+        if not session_id or not word_text:
+            return Response({'error': 'session_id және word қажет'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            session = ContextGameSession.objects.select_related('secret_word').get(id=session_id)
+        except ContextGameSession.DoesNotExist:
+            return Response({'error': 'Контекст сессиясы табылмады'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            guessed_word = KazakhWord.objects.get(word=word_text)
+        except KazakhWord.DoesNotExist:
+            return Response({'error': 'Сөз табылмады'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not guessed_word.embedding:
+            return Response({'error': 'Бұл сөзге embedding дайын емес'}, status=status.HTTP_400_BAD_REQUEST)
+
+        ranking = get_cached_context_ranking(session.id)
+        if ranking is None:
+            ranking = build_context_ranking(session.secret_word)
+            cache_context_ranking(session.id, ranking)
+
+        rank = ranking['ranks_by_word'].get(guessed_word.word)
+        if rank is None:
+            return Response({'error': 'Бұл сөз рейтингте жоқ'}, status=status.HTTP_400_BAD_REQUEST)
+
+        solved = guessed_word.id == session.secret_word_id
+        attempts = session.attempts or []
+        attempts.append({
+            'word': guessed_word.word,
+            'rank': rank,
+        })
+
+        session.attempts = attempts
+        session.solved = session.solved or solved
+        session.save()
+
+        return Response({
+            'rank': rank,
+            'total': ranking['total'],
+            'solved': session.solved,
+        })
+
+
+class ContextGiveUpView(APIView):
+    """Reveal the Context mode secret word."""
+
+    def post(self, request):
+        session_id = request.data.get('session_id')
+        if not session_id:
+            return Response({'error': 'session_id қажет'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            session = ContextGameSession.objects.select_related('secret_word').get(id=session_id)
+        except ContextGameSession.DoesNotExist:
+            return Response({'error': 'Контекст сессиясы табылмады'}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({
+            'word': session.secret_word.word,
+            'solved': session.solved,
+        })

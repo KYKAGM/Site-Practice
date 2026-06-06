@@ -10,4 +10,7 @@ urlpatterns = [
     path('hint/', views.HintView.as_view(), name='game-hint'),
     path('give-up/', views.GiveUpView.as_view(), name='game-give-up'),
     path('validate-word/', views.ValidateView.as_view(), name='game-validate'),
+    path('context/start/', views.ContextStartView.as_view(), name='context-start'),
+    path('context/guess/', views.ContextGuessView.as_view(), name='context-guess'),
+    path('context/give-up/', views.ContextGiveUpView.as_view(), name='context-give-up'),
 ]

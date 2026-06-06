@@ -1,35 +1,34 @@
-export default function MainMenu({ onPlayClick, onAboutClick }) {
+import { BookOpen, BrainCircuit, Info, Keyboard } from 'lucide-react';
+
+export default function MainMenu({ onWordleClick, onContextClick, onAboutClick }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 px-4">
-      <div className="flex flex-col items-center gap-12 max-w-md w-full">
-        <div className="text-center">
-          <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-white mb-2">
-            СӨЗДІ ТАП!
-          </h1>
-          <p className="text-slate-300 text-lg">Wordle ойынының қазақша нұсқасы</p>
+    <main className="main-menu">
+      <section className="main-menu__content">
+        <div className="main-menu__title">
+          <BookOpen className="w-12 h-12" />
+          <h1>Сөзді тап!</h1>
+          <p>Қазақша сөз ойындары</p>
         </div>
 
-        
-        <div className="flex flex-col gap-6 w-full">
-          <button
-            onClick={onPlayClick}
-            className="w-full py-4 px-6 bg-gradient-to-r from-green-400 to-yellow-500  text-white font-bold text-2xl rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-target"
-          >
-            Ойнау
+        <div className="main-menu__actions">
+          <button type="button" onClick={onWordleClick} className="menu-card cursor-target">
+            <Keyboard className="w-7 h-7" />
+            <span>Wordle</span>
+            <small>Әріптер арқылы жасырын сөзді табыңыз</small>
           </button>
 
-          <button
-            onClick={onAboutClick}
-            className="w-full py-4 px-6 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xl rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-target border border-slate-600 hover:border-slate-500"
-          >
-            Проект туралы
+          <button type="button" onClick={onContextClick} className="menu-card menu-card--accent cursor-target">
+            <BrainCircuit className="w-7 h-7" />
+            <span>Контекст</span>
+            <small>Мағынасы жақын сөздер арқылы #1 сөзді табыңыз</small>
+          </button>
+
+          <button type="button" onClick={onAboutClick} className="menu-card menu-card--quiet cursor-target">
+            <Info className="w-7 h-7" />
+            <span>Жоба туралы</span>
           </button>
         </div>
-
-        <div className="mt-12 text-center text-slate-500 text-sm">
-          <p>Өз сөздік қорыңызды ұлғайтыңыз!</p>
-        </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

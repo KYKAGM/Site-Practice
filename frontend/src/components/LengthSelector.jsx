@@ -12,7 +12,7 @@ export default function LengthSelector({ onSelect, isLoading }) {
       </div>
 
       <div className="length-grid">
-        {[4, 5, 6].map((length) => (
+        {[2, 3, 4, 5, 6, 7, 8].map((length) => (
           <button
             key={length}
             type="button"

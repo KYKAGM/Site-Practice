@@ -12,6 +12,7 @@ import SideRays from './components/SideRays';
 import TargetCursor from './components/TargetCursor';
 import MainMenu from './components/MainMenu';
 import AboutModal from './components/AboutModal';
+import ContextGame from './components/ContextGame';
 import { useGame } from './hooks/useGame';
 
 export default function App() {
@@ -36,12 +37,11 @@ export default function App() {
     giveUp,
     resetGame
   } = useGame();
-  window.__usedLetters = usedLetters;  // ← добавь эту строку
 
+  const [mode, setMode] = useState('menu');
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [isMainMenuOpen, setIsMainMenuOpen] = useState(true);
   const [theme, setTheme] = useState(() => localStorage.getItem('wordle-theme') || 'dark');
   const [accessibilityMode, setAccessibilityMode] = useState(
     () => localStorage.getItem('wordle-accessibility') === 'true'
@@ -55,12 +55,19 @@ export default function App() {
     localStorage.setItem('wordle-accessibility', String(accessibilityMode));
   }, [accessibilityMode]);
 
+  const goToMenu = () => {
+    resetGame();
+    setIsSettingsOpen(false);
+    setIsHelpOpen(false);
+    setMode('menu');
+  };
+
   return (
     <div className={`app-shell theme-${theme} ${accessibilityMode ? 'mode-colorblind' : ''}`}>
       <SideRays />
       <TargetCursor />
 
-      {!isMainMenuOpen && (
+      {mode === 'wordle' && (
         <Header
           wordLength={wordLength}
           hintsLeft={gameStatus !== 'idle' ? hintsLeft : undefined}
@@ -79,12 +86,17 @@ export default function App() {
         />
       )}
 
-      {isMainMenuOpen ? (
+      {mode === 'menu' && (
         <MainMenu
-          onPlayClick={() => setIsMainMenuOpen(false)}
+          onWordleClick={() => setMode('wordle')}
+          onContextClick={() => setMode('context')}
           onAboutClick={() => setIsAboutOpen(true)}
         />
-      ) : (
+      )}
+
+      {mode === 'context' && <ContextGame onBack={goToMenu} />}
+
+      {mode === 'wordle' && (
         <main className="game-layout">
           {gameStatus === 'idle' ? (
             <LengthSelector onSelect={selectLength} isLoading={isLoading} />
@@ -121,17 +133,11 @@ export default function App() {
                   />
                 ) : (
                   <div className="flex justify-center gap-4 p-6">
-                    <button onClick={resetGame} className="primary-action cursor-target">
+                    <button type="button" onClick={resetGame} className="primary-action cursor-target">
                       <RefreshCw className="w-4 h-4" />
                       <span>Жаңа ойын</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        setIsMainMenuOpen(true);
-                        resetGame();
-                      }}
-                      className="primary-action bg-slate-700 hover:bg-slate-600 cursor-target"
-                    >
+                    <button type="button" onClick={goToMenu} className="primary-action cursor-target">
                       <span>Негізгі меню</span>
                     </button>
                   </div>
@@ -142,14 +148,14 @@ export default function App() {
         </main>
       )}
 
-      {errorMessage && (
+      {errorMessage && mode === 'wordle' && (
         <div className="error-toast">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span className="font-semibold">{errorMessage}</span>
         </div>
       )}
 
-      {!isMainMenuOpen && (
+      {mode === 'wordle' && (
         <>
           <GameModal
             status={gameStatus}
@@ -157,7 +163,6 @@ export default function App() {
             guessCount={guesses.length}
             onReset={resetGame}
           />
-
           <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
         </>
       )}

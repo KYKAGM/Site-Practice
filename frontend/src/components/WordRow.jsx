@@ -20,7 +20,7 @@ export default function WordRow({ guess, result, isCurrent, wordLength, shake })
   }
 
   return (
-    <div className={`flex justify-center gap-2 ${isCurrent && shake ? 'animate-shake' : ''}`}>
+    <div className={`word-row ${isCurrent && shake ? 'animate-shake' : ''}`}>
       {tiles}
     </div>
   );

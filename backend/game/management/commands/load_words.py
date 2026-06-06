@@ -29,7 +29,6 @@ class Command(BaseCommand):
             return
 
         allowed_lengths = set(range(2, 9))
-
         loaded = 0
         skipped = 0
 
@@ -43,16 +42,13 @@ class Command(BaseCommand):
                     skipped += 1
                     continue
 
-                length = len(word)
-                if length not in allowed_lengths:
+                if len(word) not in allowed_lengths:
                     skipped += 1
                     continue
 
                 _, created = KazakhWord.objects.get_or_create(
                     word=word,
-                    defaults={
-                        'definition': '',
-                    }
+                    defaults={'definition': ''},
                 )
 
                 if created:
@@ -61,5 +57,5 @@ class Command(BaseCommand):
                     skipped += 1
 
         self.stdout.write(self.style.SUCCESS(
-            f'{loaded} сөз жүктелді, {skipped} сөз өткізілді (2-8 әріптік сүзгілер бойынша)'
+            f'{loaded} сөз жүктелді, {skipped} сөз өткізілді (2-8 әріптік сүзгі бойынша)'
         ))

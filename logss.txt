@@ -49,3 +49,32 @@
 Шаг 38: Попытка python manage.py check завершилась ошибкой доступа к python.exe; повтор с повышенными правами был отклонен системой, поэтому Django system check не выполнен.
 
 Шаг 39: Убраны лишние React imports для React 19/Vite; frontend lint и production build успешно пройдены.
+
+Шаг 40: Расширен выбор длины слова на фронте до 2, 3, 4, 5, 6, 7, 8.
+Шаг 41: Обновлена игровая доска и CSS плиток: ширина букв теперь адаптируется к длине слова, чтобы 7-8 әріп влезали на экран.
+Шаг 42: Переписан load_words.py: загрузка идет из words.txt, фильтр длины слов 2-8, вывод команды исправлен на нормальный казахский текст.
+
+Шаг 43: Обновлена заметка DICTIONARY_SOURCES.md: основной источник загрузки теперь words.txt, JSON-файлы оставлены как seed/reference.
+
+Шаг 44: Исправлены lint-проблемы: удалена debug-строка window.__usedLetters из App.jsx, восстановлена нормальная казахская раскладка Keyboard.jsx и убрана лишняя переменная status.
+
+Шаг 45: Проверены frontend lint и production build после расширения длины слов; обе проверки прошли успешно.
+Шаг 46: Django system check успешно выполнен через backend/venv/Scripts/python.exe.
+Шаг 47: Попытка загрузить words.txt командой load_words не прошла, потому что PostgreSQL на localhost:5432 не принимает подключения; пользователь уточнил, что слова уже добавлял, поэтому словарь вручную не изменялся.
+
+Шаг 48: Получена задача добавить второй игровой режим "Контекст" по аналогии с Contexto: embeddings, ranking, cache, API и отдельный frontend-режим.
+Шаг 49: Изучены текущие backend/frontend файлы: settings.py, models.py, views.py, urls.py, admin.py, App.jsx, MainMenu.jsx и AboutModal.jsx.
+
+Шаг 50: Добавлено поле embedding в KazakhWord, модель ContextGameSession и миграция 0002_context_mode.py.
+Шаг 51: Добавлен backend/game/context_embeddings.py: Gemini embedding helper, cosine similarity, ranking builder и cache helpers.
+Шаг 52: Добавлена команда generate_embeddings с батчами до 100 слов и задержкой 1 сек между батчами.
+Шаг 53: Добавлен LocMemCache в settings.py и admin-регистрация ContextGameSession.
+Шаг 54: Добавлены endpoints context/start, context/guess, context/give-up; guess работает только с БД и не вызывает Gemini realtime.
+
+Шаг 55: Добавлены frontend/src/api/contextApi.js, useContextGame.js и ContextGame.jsx для режима Контекст.
+Шаг 56: Главное меню обновлено: добавлены отдельные кнопки Wordle и Контекст, App.jsx переключает режимы через state.
+Шаг 57: Добавлены CSS-стили для главного меню и Context UI: поле ввода, список попыток, цветовые rank-метки и кнопки.
+Шаг 58: AboutModal переписан нормальным казахским текстом с описанием двух режимов.
+
+Шаг 59: Проверены frontend lint и production build после добавления режима Контекст; обе проверки прошли успешно.
+Шаг 60: Проверены Django system check и makemigrations --check --dry-run через backend/venv/Scripts/python.exe; ошибок и незакоммиченных миграций не обнаружено.
