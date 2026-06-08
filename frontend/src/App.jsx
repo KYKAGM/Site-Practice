@@ -63,7 +63,7 @@ export default function App() {
   };
 
   return (
-    <div className={`app-shell theme-${theme} ${accessibilityMode ? 'mode-colorblind' : ''}`}>
+    <div className={`app-shell theme-${theme} ${mode === 'context' ? 'app-shell--context' : ''} ${accessibilityMode ? 'mode-colorblind' : ''}`}>
       <SideRays />
       <TargetCursor />
 
