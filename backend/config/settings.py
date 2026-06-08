@@ -122,3 +122,4 @@ CACHES = {
 
 # Gemini API Key
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+GEMINI_EMBEDDING_MODEL = os.getenv('GEMINI_EMBEDDING_MODEL', 'gemini-embedding-001')

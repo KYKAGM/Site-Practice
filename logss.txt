@@ -78,3 +78,13 @@
 
 Шаг 59: Проверены frontend lint и production build после добавления режима Контекст; обе проверки прошли успешно.
 Шаг 60: Проверены Django system check и makemigrations --check --dry-run через backend/venv/Scripts/python.exe; ошибок и незакоммиченных миграций не обнаружено.
+
+Шаг 61: Проверена причина ошибки режима Контекст: миграция embedding применена, в базе 36930 слов, но embedding заполнен у 0 слов, поэтому context/start возвращает "embedding дайын сөз табылмады".
+Шаг 62: Исправлен поврежденный вывод команды generate_embeddings.py на нормальный казахский текст.
+
+Шаг 63: Исправлена причина ошибки generate_embeddings 404 NOT_FOUND: модель text-embedding-004 заменена на актуальную для Gemini API модель gemini-embedding-001, добавлена настройка GEMINI_EMBEDDING_MODEL через .env/settings.py.
+
+Шаг 64: Проверены Django system check и значение settings.GEMINI_EMBEDDING_MODEL; приложение использует gemini-embedding-001.
+
+Шаг 65: Уточнена причина 429 RESOURCE_EXHAUSTED: Gemini free tier считает batch items к лимиту 100 RPM, поэтому batch-size 100 требует ожидания примерно 1 минуту перед следующим batch.
+Шаг 66: Обновлена команда generate_embeddings: добавлен --delay-seconds с дефолтом 65 секунд между батчами, чтобы не превышать лимит 100 RPM.

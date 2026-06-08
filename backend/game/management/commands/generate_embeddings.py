@@ -12,7 +12,13 @@ class Command(BaseCommand):
             '--batch-size',
             type=int,
             default=100,
-            help='Number of words per Gemini embedding request',
+            help='Number of words per Gemini embedding request. Free tier counts batch items toward the 100 RPM quota.',
+        )
+        parser.add_argument(
+            '--delay-seconds',
+            type=int,
+            default=65,
+            help='Delay between batches. Use 65+ seconds for Gemini free tier 100 RPM with batch-size 100.',
         )
         parser.add_argument(
             '--limit',
@@ -23,14 +29,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         batch_size = min(options['batch_size'], 100)
+        delay_seconds = max(options['delay_seconds'], 0)
         limit = options['limit']
-        queryset = KazakhWord.objects.filter(embedding__isnull=True).order_by('id')
-        if limit:
-            queryset = queryset[:limit]
-
         processed = 0
 
         while True:
+            queryset = KazakhWord.objects.filter(embedding__isnull=True).order_by('id')
+            if limit:
+                remaining = max(limit - processed, 0)
+                if remaining == 0:
+                    break
+                queryset = queryset[:remaining]
+
             words = list(queryset[:batch_size])
             if not words:
                 break
@@ -46,14 +56,9 @@ class Command(BaseCommand):
             processed += len(words)
             self.stdout.write(self.style.SUCCESS(f'{processed} embedding сақталды'))
 
-            if len(words) == batch_size:
-                sleep_between_embedding_batches()
-
-            queryset = KazakhWord.objects.filter(embedding__isnull=True).order_by('id')
-            if limit:
-                remaining = max(limit - processed, 0)
-                if remaining == 0:
-                    break
-                queryset = queryset[:remaining]
+            should_continue = len(words) == batch_size and (not limit or processed < limit)
+            if should_continue and delay_seconds:
+                self.stdout.write(f'{delay_seconds} сек күту: Gemini embedding quota 100 RPM')
+                sleep_between_embedding_batches(delay_seconds)
 
         self.stdout.write(self.style.SUCCESS(f'Дайын: {processed} сөзге embedding жасалды'))

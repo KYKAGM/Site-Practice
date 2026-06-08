@@ -6,7 +6,7 @@ from django.core.cache import cache
 
 from .models import KazakhWord
 
-EMBEDDING_MODEL = 'text-embedding-004'
+EMBEDDING_MODEL = settings.GEMINI_EMBEDDING_MODEL
 CONTEXT_CACHE_TIMEOUT = 60 * 60 * 6
 
 
@@ -99,5 +99,5 @@ def context_cache_key(session_id):
     return f'context-ranking:{session_id}'
 
 
-def sleep_between_embedding_batches():
-    time.sleep(1)
+def sleep_between_embedding_batches(delay_seconds=65):
+    time.sleep(delay_seconds)
